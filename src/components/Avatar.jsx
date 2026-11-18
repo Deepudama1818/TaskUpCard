@@ -9,15 +9,16 @@ const PALETTE = [
 ];
 
 function getInitials(name = '') {
-  const parts = String(name).trim().split(/\s+/).filter(Boolean);
+  const parts = String(name ?? '').trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return 'U';
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
 function getTone(name = '') {
+  const value = String(name ?? '');
   let sum = 0;
-  for (let i = 0; i < name.length; i += 1) sum += name.charCodeAt(i);
+  for (let i = 0; i < value.length; i += 1) sum += value.charCodeAt(i);
   return PALETTE[sum % PALETTE.length];
 }
 
