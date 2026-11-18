@@ -13,7 +13,7 @@ Full-stack task management and freelancer collaboration platform built with **Ja
 
 1. Install dependencies:
    ```bash
-   npm install
+   npm install --legacy-peer-deps
    ```
 2. Configure environment variables:
    ```bash
@@ -56,7 +56,7 @@ This repository includes a `render.yaml` Blueprint for one-click or manual deplo
 ### Render Web Service Settings
 
 - **Environment / Runtime**: `Node`
-- **Build Command**: `npm install && npm run build`
+- **Build Command**: `npm install --legacy-peer-deps && npm run build`
 - **Start Command**: `npm start`
 - **Health Check Path**: `/api/health`
 
