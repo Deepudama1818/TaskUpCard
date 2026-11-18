@@ -19,8 +19,10 @@ const DEFAULT_SUPER_ADMIN = {
 
 async function ensureDefaultSuperAdmin(passwordHash) {
   const roleRes = await pool.query("SELECT id FROM roles WHERE name = 'super_admin'");
-  if (roleRes.rowCount === 0) return;
+  const projectManagerRoleRes = await pool.query("SELECT id FROM roles WHERE name = 'project_manager'");
+  if (roleRes.rowCount === 0 || projectManagerRoleRes.rowCount === 0) return;
   const superAdminRoleId = roleRes.rows[0].id;
+  const projectManagerRoleId = projectManagerRoleRes.rows[0].id;
 
   const sa = DEFAULT_SUPER_ADMIN;
   await pool.query(
@@ -47,6 +49,23 @@ async function ensureDefaultSuperAdmin(passwordHash) {
       sa.specialty,
       JSON.stringify(sa.skills),
       sa.bio,
+    ]
+  );
+
+  await pool.query(
+    `UPDATE users
+     SET role_id = $1, status = 'deactivated', updated_at = NOW()
+     WHERE role_id = $2 AND email = ANY($3::text[])`,
+    [
+      projectManagerRoleId,
+      superAdminRoleId,
+      [
+        'admin@taskupcard.com',
+        'admin2@taskupcard.com',
+        'admin3@taskupcard.com',
+        'admin4@taskupcard.com',
+        'admin5@taskupcard.com',
+      ],
     ]
   );
 }
