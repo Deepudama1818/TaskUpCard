@@ -1,0 +1,6 @@
+{
+  "name": "TaskUpCard",
+  "description": "Independent task management and freelancer collaboration workspace for managing external contributors, deliverables, deadlines, and project analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
