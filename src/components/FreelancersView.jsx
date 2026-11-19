@@ -355,9 +355,9 @@ export default function FreelancersView({ projects = [], refreshSignal, onTrigge
 
       {/* Directory Grid */}
       {loading && users.length === 0 ? (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 animate-pulse">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-56 rounded-xl bg-slate-200/60 dark:bg-slate-800/60" />
+            <div key={i} className="nx3-skeleton h-56 rounded-xl" />
           ))}
         </div>
       ) : (
@@ -365,7 +365,7 @@ export default function FreelancersView({ projects = [], refreshSignal, onTrigge
           {users.map((u) => (
             <div
               key={u.id}
-              className="glass-surface rounded-xl p-5 flex flex-col justify-between gap-4 transition-transform duration-150 hover:-translate-y-0.5"
+              className="glass-surface rounded-xl p-5 flex flex-col justify-between gap-4 transition-colors"
             >
               <div className="space-y-3">
                 <div className="flex items-start justify-between gap-3">

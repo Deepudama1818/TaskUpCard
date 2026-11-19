@@ -202,7 +202,7 @@ export default function ReportsView({ projects = [], users = [], refreshSignal }
           <h2 className="font-display text-base font-semibold">Monthly Task Completion Trends</h2>
           <div className="mt-4 h-64">
             {loading && !report ? (
-              <div className="h-full bg-slate-100 dark:bg-slate-800 animate-pulse rounded-lg" />
+              <div className="nx3-skeleton h-full rounded-lg" />
             ) : trends.length > 0 ? (
               <Bar
                 data={trendChartData}

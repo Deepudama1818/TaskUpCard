@@ -23,6 +23,7 @@ function WorkspaceShell() {
   const { notify } = useToast();
 
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [visitedTabs, setVisitedTabs] = useState(() => new Set(['dashboard']));
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const [projects, setProjects] = useState([]);
@@ -36,6 +37,11 @@ function WorkspaceShell() {
 
   const triggerRefresh = useCallback(() => {
     setRefreshSignal((n) => n + 1);
+  }, []);
+
+  const navigateToTab = useCallback((tab) => {
+    setActiveTab(tab);
+    setVisitedTabs((visited) => visited.has(tab) ? visited : new Set([...visited, tab]));
   }, []);
 
   const loadWorkspaceMeta = useCallback(async () => {
@@ -93,14 +99,18 @@ function WorkspaceShell() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+      <div className="nx3 min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
         <div className="text-sm font-medium text-slate-500">Loading TaskUpCard workspace...</div>
       </div>
     );
   }
 
   if (!user) {
-    return <AuthPortal />;
+    return (
+      <div className="nx3 min-h-screen">
+        <AuthPortal />
+      </div>
+    );
   }
 
   const tabTitles = {
@@ -116,10 +126,10 @@ function WorkspaceShell() {
   };
 
   return (
-    <div className="min-h-screen flex text-slate-900 dark:text-slate-100">
+    <div className="nx3 min-h-screen flex text-slate-900 dark:text-slate-100">
       <Sidebar
         activeTab={activeTab}
-        onSelectTab={setActiveTab}
+        onSelectTab={navigateToTab}
         unreadCount={unreadCount}
         mobileOpen={mobileNavOpen}
         onCloseMobile={() => setMobileNavOpen(false)}
@@ -148,7 +158,7 @@ function WorkspaceShell() {
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <button
               type="button"
-              onClick={() => setActiveTab(isPrivileged ? 'all-tasks' : 'my-tasks')}
+              onClick={() => navigateToTab(isPrivileged ? 'all-tasks' : 'my-tasks')}
               className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 text-xs text-slate-500 dark:text-slate-400 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
             >
               <Search className="w-3.5 h-3.5" /> Search tasks
@@ -165,7 +175,7 @@ function WorkspaceShell() {
 
             <button
               type="button"
-              onClick={() => setActiveTab('notifications')}
+              onClick={() => navigateToTab('notifications')}
               className="relative p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
               aria-label="Open notifications"
             >
@@ -192,16 +202,19 @@ function WorkspaceShell() {
 
         {/* Main Viewport */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1440px] w-full mx-auto">
-          {activeTab === 'dashboard' && (
+          {visitedTabs.has('dashboard') && (
+            <div hidden={activeTab !== 'dashboard'}>
             <DashboardView
               onOpenTask={setOpenTaskId}
-              onNavigate={setActiveTab}
+              onNavigate={navigateToTab}
               onNewTask={() => setQuickTaskModalOpen(true)}
               refreshSignal={refreshSignal}
             />
+            </div>
           )}
 
-          {activeTab === 'my-tasks' && (
+          {visitedTabs.has('my-tasks') && (
+            <div hidden={activeTab !== 'my-tasks'}>
             <TasksView
               mode="my"
               projects={projects}
@@ -210,9 +223,11 @@ function WorkspaceShell() {
               refreshSignal={refreshSignal}
               onTriggerRefresh={triggerRefresh}
             />
+            </div>
           )}
 
-          {activeTab === 'all-tasks' && isPrivileged && (
+          {visitedTabs.has('all-tasks') && isPrivileged && (
+            <div hidden={activeTab !== 'all-tasks'}>
             <TasksView
               mode="all"
               projects={projects}
@@ -221,18 +236,22 @@ function WorkspaceShell() {
               refreshSignal={refreshSignal}
               onTriggerRefresh={triggerRefresh}
             />
+            </div>
           )}
 
-          {activeTab === 'projects' && (
+          {visitedTabs.has('projects') && (
+            <div hidden={activeTab !== 'projects'}>
             <ProjectsView
               users={users}
               onOpenTask={setOpenTaskId}
               refreshSignal={refreshSignal}
               onTriggerRefresh={triggerRefresh}
             />
+            </div>
           )}
 
-          {activeTab === 'calendar' && (
+          {visitedTabs.has('calendar') && (
+            <div hidden={activeTab !== 'calendar'}>
             <CalendarView
               projects={projects}
               users={users}
@@ -240,33 +259,44 @@ function WorkspaceShell() {
               refreshSignal={refreshSignal}
               onTriggerRefresh={triggerRefresh}
             />
+            </div>
           )}
 
-          {activeTab === 'freelancers' && (
+          {visitedTabs.has('freelancers') && (
+            <div hidden={activeTab !== 'freelancers'}>
             <FreelancersView
               projects={projects}
               refreshSignal={refreshSignal}
               onTriggerRefresh={triggerRefresh}
             />
+            </div>
           )}
 
-          {activeTab === 'notifications' && (
+          {visitedTabs.has('notifications') && (
+            <div hidden={activeTab !== 'notifications'}>
             <NotificationsView
               notifications={notifications}
               onRefreshNotifications={loadWorkspaceMeta}
               onOpenTask={setOpenTaskId}
             />
+            </div>
           )}
 
-          {activeTab === 'reports' && (
+          {visitedTabs.has('reports') && (
+            <div hidden={activeTab !== 'reports'}>
             <ReportsView
               projects={projects}
               users={users}
               refreshSignal={refreshSignal}
             />
+            </div>
           )}
 
-          {activeTab === 'settings' && <SettingsView />}
+          {visitedTabs.has('settings') && (
+            <div hidden={activeTab !== 'settings'}>
+              <SettingsView />
+            </div>
+          )}
         </main>
       </div>
 

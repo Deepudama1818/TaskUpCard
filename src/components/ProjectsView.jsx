@@ -195,10 +195,11 @@ export default function ProjectsView({ users = [], onOpenTask, refreshSignal, on
         </div>
 
         {/* Sub-nav tabs */}
-        <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg w-fit">
+        <div className="nx3-segmented flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg w-fit">
           <button
             type="button"
             onClick={() => setDetailTab('tasks')}
+            aria-pressed={detailTab === 'tasks'}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md ${
               detailTab === 'tasks' ? 'bg-white dark:bg-slate-900 shadow-sm' : 'text-slate-600 dark:text-slate-400'
             }`}
@@ -208,6 +209,7 @@ export default function ProjectsView({ users = [], onOpenTask, refreshSignal, on
           <button
             type="button"
             onClick={() => setDetailTab('overview')}
+            aria-pressed={detailTab === 'overview'}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md ${
               detailTab === 'overview' ? 'bg-white dark:bg-slate-900 shadow-sm' : 'text-slate-600 dark:text-slate-400'
             }`}
@@ -217,6 +219,7 @@ export default function ProjectsView({ users = [], onOpenTask, refreshSignal, on
           <button
             type="button"
             onClick={() => setDetailTab('activity')}
+            aria-pressed={detailTab === 'activity'}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md ${
               detailTab === 'activity' ? 'bg-white dark:bg-slate-900 shadow-sm' : 'text-slate-600 dark:text-slate-400'
             }`}
@@ -378,9 +381,9 @@ export default function ProjectsView({ users = [], onOpenTask, refreshSignal, on
       </div>
 
       {loading && projects.length === 0 ? (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 animate-pulse">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-48 rounded-xl bg-slate-200/60 dark:bg-slate-800/60" />
+            <div key={i} className="nx3-skeleton h-48 rounded-xl" />
           ))}
         </div>
       ) : projects.length === 0 ? (
@@ -394,7 +397,7 @@ export default function ProjectsView({ users = [], onOpenTask, refreshSignal, on
             <div
               key={proj.id}
               onClick={() => setSelectedProjectId(proj.id)}
-              className="glass-surface rounded-2xl p-5 hover:border-blue-500 transition-all hover:-translate-y-0.5 cursor-pointer flex flex-col justify-between gap-4"
+              className="glass-surface rounded-2xl p-5 hover:border-emerald-500/60 transition-colors cursor-pointer flex flex-col justify-between gap-4"
             >
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
@@ -439,7 +442,7 @@ export default function ProjectsView({ users = [], onOpenTask, refreshSignal, on
                   </div>
                   <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                     <div
-                      className="h-full bg-blue-600 rounded-full transition-all"
+                      className="h-full bg-blue-600 rounded-full transition-[width] duration-300 ease-out"
                       style={{ width: `${proj.progress}%` }}
                     />
                   </div>

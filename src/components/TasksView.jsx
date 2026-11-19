@@ -174,10 +174,11 @@ export default function TasksView({
 
         <div className="flex items-center gap-3">
           {/* View mode toggle */}
-          <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
+          <div className="nx3-segmented flex items-center p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
             <button
               type="button"
               onClick={() => setViewLayout('list')}
+              aria-pressed={viewLayout === 'list'}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
                 viewLayout === 'list'
                   ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm'
@@ -190,6 +191,7 @@ export default function TasksView({
             <button
               type="button"
               onClick={() => setViewLayout('kanban')}
+              aria-pressed={viewLayout === 'kanban'}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
                 viewLayout === 'kanban'
                   ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm'
@@ -313,9 +315,9 @@ export default function TasksView({
 
       {/* Loading skeleton */}
       {loading && tasks.length === 0 ? (
-        <div className="space-y-3 animate-pulse">
+        <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-14 rounded-xl bg-slate-200/60 dark:bg-slate-800/60" />
+            <div key={i} className="nx3-skeleton h-14 rounded-xl" />
           ))}
         </div>
       ) : tasks.length === 0 ? (
@@ -533,7 +535,7 @@ export default function TasksView({
                         draggable
                         onDragStart={() => setDraggingTaskId(task.id)}
                         onClick={() => onOpenTask(task.id)}
-                        className="bg-white/85 dark:bg-slate-900/85 border border-slate-200/80 dark:border-slate-700/70 rounded-xl p-3.5 cursor-pointer hover:border-blue-500 dark:hover:border-blue-500 transition-all shadow-sm space-y-2.5"
+                        className="bg-white/85 dark:bg-slate-900/85 border border-slate-200/80 dark:border-slate-700/70 rounded-xl p-3.5 cursor-pointer hover:border-blue-500 dark:hover:border-blue-500 transition-colors shadow-sm space-y-2.5"
                       >
                         <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
                           <span className="font-mono">{task.task_code}</span>

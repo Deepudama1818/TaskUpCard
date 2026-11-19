@@ -289,9 +289,11 @@ export default function SettingsView() {
           </div>
 
           <div className="space-y-2.5 text-sm">
-            <label className="flex items-center gap-2.5 cursor-pointer">
+            <label className="nx3-switch-row flex items-center gap-2.5 cursor-pointer">
               <input
                 type="checkbox"
+                role="switch"
+                className="nx3-switch"
                 checked={workspaceSettings.allowFreelancerSelfLogTime}
                 onChange={(e) =>
                   setWorkspaceSettings({
@@ -302,9 +304,11 @@ export default function SettingsView() {
               />
               <span>Allow freelancers to log time entries on assigned tasks</span>
             </label>
-            <label className="flex items-center gap-2.5 cursor-pointer">
+            <label className="nx3-switch-row flex items-center gap-2.5 cursor-pointer">
               <input
                 type="checkbox"
+                role="switch"
+                className="nx3-switch"
                 checked={notifSettings.emailOnTaskAssign}
                 onChange={(e) =>
                   setNotifSettings({ ...notifSettings, emailOnTaskAssign: e.target.checked })
@@ -312,9 +316,11 @@ export default function SettingsView() {
               />
               <span>Send email notifications on new task assignments</span>
             </label>
-            <label className="flex items-center gap-2.5 cursor-pointer">
+            <label className="nx3-switch-row flex items-center gap-2.5 cursor-pointer">
               <input
                 type="checkbox"
+                role="switch"
+                className="nx3-switch"
                 checked={notifSettings.emailOnMention}
                 onChange={(e) =>
                   setNotifSettings({ ...notifSettings, emailOnMention: e.target.checked })

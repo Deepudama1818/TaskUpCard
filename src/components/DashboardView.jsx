@@ -9,7 +9,21 @@ import {
   Legend,
 } from 'chart.js';
 import { Doughnut, Bar } from 'react-chartjs-2';
-import { ArrowUpRight, Clock, AlertTriangle, Plus } from 'lucide-react';
+import {
+  Activity,
+  AlertTriangle,
+  ArrowUpRight,
+  CalendarClock,
+  CheckCheck,
+  CircleAlert,
+  CircleDashed,
+  Clock,
+  FolderKanban,
+  ListTodo,
+  Play,
+  Plus,
+  UsersRound,
+} from 'lucide-react';
 import { apiRequest, formatDate, formatDateTime, getPriorityMeta, getStatusMeta, isTaskOverdue } from '../utils/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import Avatar from './Avatar.jsx';
@@ -17,7 +31,7 @@ import Avatar from './Avatar.jsx';
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 export default function DashboardView({ onOpenTask, onNavigate, onNewTask, refreshSignal }) {
-  const { user, isPrivileged } = useAuth();
+  const { user, isPrivileged, theme } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -39,15 +53,15 @@ export default function DashboardView({ onOpenTask, onNavigate, onNewTask, refre
 
   if (loading && !data) {
     return (
-      <div className="space-y-6 animate-pulse">
+      <div className="nx3 nx3-dashboard space-y-6">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="h-24 rounded-xl bg-slate-200/60 dark:bg-slate-800/60" />
+            <div key={i} className="nx3-skeleton h-24 rounded-xl" />
           ))}
         </div>
         <div className="grid lg:grid-cols-2 gap-6">
-          <div className="h-72 rounded-xl bg-slate-200/60 dark:bg-slate-800/60" />
-          <div className="h-72 rounded-xl bg-slate-200/60 dark:bg-slate-800/60" />
+          <div className="nx3-skeleton h-72 rounded-xl" />
+          <div className="nx3-skeleton h-72 rounded-xl" />
         </div>
       </div>
     );
@@ -55,16 +69,20 @@ export default function DashboardView({ onOpenTask, onNavigate, onNewTask, refre
 
   const kpis = data?.kpis || {};
 
+  const taskDestination = isPrivileged ? 'all-tasks' : 'my-tasks';
   const kpiCards = [
-    { label: 'Total Tasks', value: kpis.total_tasks ?? 0, tone: 'text-slate-900 dark:text-white' },
-    { label: 'Tasks To Do', value: kpis.todo_tasks ?? 0, tone: 'text-sky-600 dark:text-sky-400' },
-    { label: 'In Progress', value: kpis.in_progress_tasks ?? 0, tone: 'text-blue-600 dark:text-blue-400' },
-    { label: 'Completed', value: kpis.completed_tasks ?? 0, tone: 'text-emerald-600 dark:text-emerald-400' },
-    { label: 'Overdue Tasks', value: kpis.overdue_tasks ?? 0, tone: 'text-rose-600 dark:text-rose-400' },
-    { label: 'Upcoming (7d)', value: kpis.upcoming_deadlines ?? 0, tone: 'text-amber-600 dark:text-amber-400' },
-    { label: 'Active Projects', value: kpis.active_projects ?? 0, tone: 'text-slate-900 dark:text-white' },
-    { label: 'Total Freelancers', value: kpis.total_freelancers ?? 0, tone: 'text-slate-900 dark:text-white' },
+    { label: 'Total tasks', value: kpis.total_tasks ?? '—', note: 'Across your workspace', icon: ListTodo, tone: 'mint', target: taskDestination },
+    { label: 'To do', value: kpis.todo_tasks ?? '—', note: 'Waiting to be picked up', icon: CircleDashed, tone: 'cyan', target: taskDestination },
+    { label: 'In progress', value: kpis.in_progress_tasks ?? '—', note: 'Currently being worked on', icon: Play, tone: 'blue', target: taskDestination },
+    { label: 'Completed', value: kpis.completed_tasks ?? '—', note: 'Finished deliverables', icon: CheckCheck, tone: 'mint', target: taskDestination },
+    { label: 'Overdue', value: kpis.overdue_tasks ?? '—', note: 'Past their due date', icon: CircleAlert, tone: 'red', target: taskDestination },
+    { label: 'Due in 7 days', value: kpis.upcoming_deadlines ?? '—', note: 'Upcoming deadlines', icon: CalendarClock, tone: 'amber', target: 'calendar' },
+    { label: 'Active projects', value: kpis.active_projects ?? '—', note: 'Currently in delivery', icon: FolderKanban, tone: 'violet', target: 'projects' },
+    { label: 'Freelancers', value: kpis.total_freelancers ?? '—', note: 'In your workspace', icon: UsersRound, tone: 'cyan', target: 'freelancers' },
   ];
+
+  const chartText = theme === 'dark' ? '#7A8398' : '#64748B';
+  const chartGrid = theme === 'dark' ? '#252836' : '#E2E8F0';
 
   const statusChartData = {
     labels: ['To Do / Open', 'In Progress', 'Under Review', 'Revision Req.', 'Completed'],
@@ -77,7 +95,9 @@ export default function DashboardView({ onOpenTask, onNavigate, onNewTask, refre
           kpis.revision_tasks || 0,
           kpis.completed_tasks || 0,
         ],
-        backgroundColor: ['#0ea5e9', '#2563eb', '#f59e0b', '#e11d48', '#16a34a'],
+        backgroundColor: ['#06b6d4', '#60a5fa', '#eab308', '#ef4444', '#22D3A5'],
+        hoverOffset: 4,
+        spacing: 3,
         borderWidth: 0,
       },
     ],
@@ -90,74 +110,83 @@ export default function DashboardView({ onOpenTask, onNavigate, onNewTask, refre
       {
         label: 'Completion %',
         data: projectProgress.map((p) => p.percentage),
-        backgroundColor: '#2563eb',
-        borderRadius: 6,
-        barThickness: 28,
+        backgroundColor: '#22D3A5',
+        borderRadius: 5,
+        barThickness: 24,
       },
     ],
   };
 
   return (
-    <div className="space-y-8">
+    <div className="nx3 nx3-dashboard space-y-7">
       {/* Header row */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="nx3-dashboard-header flex flex-wrap items-end justify-between gap-5">
         <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Welcome back, {user?.name?.split(' ')[0]}
+          <div className="nx3-kicker"><Activity size={14} /> WORKSPACE / OPERATIONS</div>
+          <h1 className="nx3-page-title">
+            Welcome back, <span>{user?.name?.split(' ')[0] || 'there'}</span>
           </h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          <p className="nx3-page-subtitle">
             {isPrivileged
-              ? 'Workspace delivery overview across projects, freelancers, and upcoming milestones.'
-              : 'Your assigned deliverables, deadlines, and recent review updates.'}
+              ? 'A live read on delivery, team workload, and what needs attention.'
+              : 'Your assigned work, approaching deadlines, and recent updates.'}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <button
             type="button"
             onClick={() => onNavigate('my-tasks')}
-            className="px-4 py-2 text-sm font-medium rounded-lg glass-surface text-slate-700 dark:text-slate-200 hover:border-blue-500 transition-colors whitespace-nowrap"
+            className="nx3-button nx3-button-secondary"
           >
-            View My Tasks
+            <ListTodo size={15} /> My tasks
           </button>
           {isPrivileged && (
             <button
               type="button"
               onClick={onNewTask}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap"
+              className="nx3-button nx3-button-primary"
             >
-              <Plus className="w-4 h-4" />
-              New Task
+              <Plus size={16} /> Create task
             </button>
           )}
         </div>
       </div>
 
       {/* 8 KPI Widgets */}
-      <section className="grid grid-cols-2 sm:grid-cols-4 gap-4" aria-label="Task metrics">
-        {kpiCards.map((card) => (
-          <div
-            key={card.label}
-            className="glass-surface rounded-2xl p-4 transition-transform duration-150 hover:-translate-y-0.5"
-          >
-            <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
-              {card.label}
-            </div>
-            <div className={`mt-2 text-2xl font-display font-bold tabular-nums ${card.tone}`}>
-              {card.value}
-            </div>
-          </div>
-        ))}
+      <section className="nx3-stat-grid grid grid-cols-2 sm:grid-cols-4 gap-3.5" aria-label="Task metrics">
+        {kpiCards.map((card) => {
+          const Icon = card.icon;
+          return (
+            <button
+              key={card.label}
+              type="button"
+              onClick={() => onNavigate(card.target)}
+              className={`nx3-stat-card tone-${card.tone}`}
+              aria-label={`${card.label}: ${card.value}. Open related view.`}
+            >
+              <span className="nx3-stat-top">
+                <span className="nx3-stat-label">{card.label}</span>
+                <span className="nx3-stat-icon"><Icon size={16} strokeWidth={1.8} /></span>
+              </span>
+              <span className="nx3-stat-value">{card.value}</span>
+              <span className="nx3-stat-bottom">
+                <span>{card.note}</span><ArrowUpRight size={14} />
+              </span>
+            </button>
+          );
+        })}
       </section>
 
       {/* Analytics Charts */}
-      <section className="grid lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-5 glass-surface rounded-2xl p-5">
-          <h2 className="font-display text-base font-semibold text-slate-900 dark:text-white">
-            Task Completion Breakdown
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Live distribution across active workflow stages
-          </p>
+      <section className="grid lg:grid-cols-12 gap-4">
+        <div className="nx3-panel lg:col-span-5 glass-surface rounded-2xl p-5">
+          <div className="nx3-panel-heading">
+            <div>
+              <h2>Task status</h2>
+              <p>Distribution across workflow stages</p>
+            </div>
+            <span className="nx3-panel-mark">LIVE</span>
+          </div>
           <div className="mt-5 h-56 flex items-center justify-center">
             {kpis.total_tasks > 0 ? (
               <Doughnut
@@ -167,32 +196,32 @@ export default function DashboardView({ onOpenTask, onNavigate, onNewTask, refre
                   maintainAspectRatio: false,
                   cutout: '66%',
                   plugins: {
-                    legend: { position: 'right', labels: { boxWidth: 10, padding: 14 } },
+                    legend: {
+                      position: 'right',
+                      labels: { color: chartText, boxWidth: 8, boxHeight: 8, padding: 14, usePointStyle: true, font: { family: 'Nunito', size: 11, weight: 700 } },
+                    },
+                    tooltip: { backgroundColor: theme === 'dark' ? '#1E2230' : '#0F172A', padding: 10, titleFont: { family: 'Nunito' }, bodyFont: { family: 'JetBrains Mono' } },
                   },
                 }}
               />
             ) : (
-              <p className="text-sm text-slate-400">No tasks recorded yet.</p>
+              <p className="nx3-empty-note">{data ? 'No tasks recorded yet.' : 'Task analytics are unavailable.'}</p>
             )}
           </div>
         </div>
 
-        <div className="lg:col-span-7 glass-surface rounded-2xl p-5">
-          <div className="flex items-center justify-between">
+        <div className="nx3-panel lg:col-span-7 glass-surface rounded-2xl p-5">
+          <div className="nx3-panel-heading">
             <div>
-              <h2 className="font-display text-base font-semibold text-slate-900 dark:text-white">
-                Project Progress
-              </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Completion percentage by active project
-              </p>
+              <h2>Project progress</h2>
+              <p>Completion across active projects</p>
             </div>
             <button
               type="button"
               onClick={() => onNavigate('projects')}
-              className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1"
+              className="nx3-inline-link"
             >
-              All projects <ArrowUpRight className="w-3.5 h-3.5" />
+              All projects <ArrowUpRight size={14} />
             </button>
           </div>
           <div className="mt-5 h-56">
@@ -203,14 +232,15 @@ export default function DashboardView({ onOpenTask, onNavigate, onNewTask, refre
                   responsive: true,
                   maintainAspectRatio: false,
                   scales: {
-                    y: { beginAtZero: true, max: 100, ticks: { callback: (v) => `${v}%` } },
+                    y: { beginAtZero: true, max: 100, grid: { color: chartGrid }, border: { display: false }, ticks: { color: chartText, callback: (v) => `${v}%`, font: { family: 'JetBrains Mono', size: 10 } } },
+                    x: { grid: { display: false }, border: { display: false }, ticks: { color: chartText, font: { family: 'JetBrains Mono', size: 10 } } },
                   },
-                  plugins: { legend: { display: false } },
+                  plugins: { legend: { display: false }, tooltip: { backgroundColor: theme === 'dark' ? '#1E2230' : '#0F172A', padding: 10, titleFont: { family: 'Nunito' }, bodyFont: { family: 'JetBrains Mono' } } },
                 }}
               />
             ) : (
               <div className="h-full flex items-center justify-center text-sm text-slate-400">
-                No project data available.
+                {data ? 'No project data available.' : 'Project analytics are unavailable.'}
               </div>
             )}
           </div>

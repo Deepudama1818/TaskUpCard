@@ -471,9 +471,9 @@ export default function TaskDetailDrawer({ taskId, users = [], onClose, onTaskMu
         </header>
 
         {loading || !task ? (
-          <div className="flex-1 p-8 animate-pulse space-y-4">
-            <div className="h-8 w-2/3 bg-slate-200 dark:bg-slate-800 rounded" />
-            <div className="h-24 w-full bg-slate-200 dark:bg-slate-800 rounded" />
+          <div className="flex-1 p-8 space-y-4">
+            <div className="nx3-skeleton h-8 w-2/3 rounded" />
+            <div className="nx3-skeleton h-24 w-full rounded" />
           </div>
         ) : (
           <div className="flex-1 grid lg:grid-cols-12 overflow-hidden">
