@@ -26,6 +26,7 @@ export default function FreelancersView({ projects = [], refreshSignal, onTrigge
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [createForm, setCreateForm] = useState({
@@ -81,6 +82,7 @@ export default function FreelancersView({ projects = [], refreshSignal, onTrigge
       notify(err.message, 'error');
     } finally {
       setLoading(false);
+      setHasLoaded(true);
     }
   }, [roleFilter, search, isPrivileged, notify]);
 
@@ -354,7 +356,7 @@ export default function FreelancersView({ projects = [], refreshSignal, onTrigge
       )}
 
       {/* Directory Grid */}
-      {loading && users.length === 0 ? (
+      {loading && !hasLoaded ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="nx3-skeleton h-56 rounded-xl" />

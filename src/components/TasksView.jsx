@@ -46,6 +46,7 @@ export default function TasksView({
 
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [viewLayout, setViewLayout] = useState('list'); // list | kanban
 
   const [filters, setFilters] = useState({
@@ -81,6 +82,7 @@ export default function TasksView({
       notify(err.message, 'error');
     } finally {
       setLoading(false);
+      setHasLoaded(true);
     }
   }, [mode, filters, notify]);
 
@@ -314,7 +316,7 @@ export default function TasksView({
       </div>
 
       {/* Loading skeleton */}
-      {loading && tasks.length === 0 ? (
+      {loading && !hasLoaded ? (
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="nx3-skeleton h-14 rounded-xl" />

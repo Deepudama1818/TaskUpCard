@@ -18,6 +18,7 @@ export default function ProjectsView({ users = [], onOpenTask, refreshSignal, on
 
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [statusFilter, setStatusFilter] = useState('all');
 
   const [selectedProjectId, setSelectedProjectId] = useState(null);
@@ -49,6 +50,7 @@ export default function ProjectsView({ users = [], onOpenTask, refreshSignal, on
       notify(err.message, 'error');
     } finally {
       setLoading(false);
+      setHasLoaded(true);
     }
   }, [statusFilter, notify]);
 
@@ -380,7 +382,7 @@ export default function ProjectsView({ users = [], onOpenTask, refreshSignal, on
         </div>
       </div>
 
-      {loading && projects.length === 0 ? (
+      {loading && !hasLoaded ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="nx3-skeleton h-48 rounded-xl" />

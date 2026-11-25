@@ -56,6 +56,7 @@ export default function TaskDetailDrawer({ taskId, users = [], onClose, onTaskMu
 
   // Comments + @mentions + Attachments
   const [commentBody, setCommentBody] = useState('');
+  const [commentSubmitting, setCommentSubmitting] = useState(false);
   const [replyTo, setReplyTo] = useState(null);
   const [commentFiles, setCommentFiles] = useState([]);
   const [editingCommentId, setEditingCommentId] = useState(null);
@@ -67,6 +68,7 @@ export default function TaskDetailDrawer({ taskId, users = [], onClose, onTaskMu
 
   const fileInputRef = useRef(null);
   const commentFileRef = useRef(null);
+  const commentPostingRef = useRef(false);
 
   const loadDetail = useCallback(async () => {
     if (!taskId) return;
@@ -358,7 +360,10 @@ export default function TaskDetailDrawer({ taskId, users = [], onClose, onTaskMu
 
   const handlePostComment = async (e) => {
     e.preventDefault();
+    if (commentPostingRef.current) return;
     if (!commentBody.trim() && commentFiles.length === 0) return;
+    commentPostingRef.current = true;
+    setCommentSubmitting(true);
     try {
       const formData = new FormData();
       formData.append('body', commentBody.trim());
@@ -380,6 +385,9 @@ export default function TaskDetailDrawer({ taskId, users = [], onClose, onTaskMu
       onTaskMutated?.();
     } catch (err) {
       notify(err.message, 'error');
+    } finally {
+      commentPostingRef.current = false;
+      setCommentSubmitting(false);
     }
   };
 
@@ -1180,9 +1188,10 @@ export default function TaskDetailDrawer({ taskId, users = [], onClose, onTaskMu
 
                       <button
                         type="submit"
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium rounded-lg bg-blue-600 hover:bg-blue-700 text-white"
+                        disabled={commentSubmitting}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium rounded-lg bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-60"
                       >
-                        <Send className="w-3.5 h-3.5" /> Send
+                        <Send className="w-3.5 h-3.5" /> {commentSubmitting ? 'Sending...' : 'Send'}
                       </button>
                     </div>
                   </form>

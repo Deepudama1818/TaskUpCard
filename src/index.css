@@ -41,7 +41,10 @@
   color: var(--nx-text);
   font-family: var(--nx-sans);
   color-scheme: light;
-  background-color: var(--nx-page);
+  background:
+    radial-gradient(ellipse at 8% 0%, rgba(14, 164, 124, 0.075), transparent 34rem),
+    var(--nx-page);
+  background-attachment: fixed;
 }
 
 .dark .nx3 {
@@ -55,20 +58,50 @@
   --nx-muted: #7a8398;
   --nx-hint: #5a6080;
   color-scheme: dark;
+  background:
+    radial-gradient(ellipse at 8% 0%, rgba(34, 211, 165, 0.08), transparent 34rem),
+    var(--nx-page);
 }
 
 .nx3 .glass-surface {
-  background: var(--nx-surface);
-  border: 1px solid var(--nx-border);
-  box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  background: color-mix(in srgb, var(--nx-surface) 84%, transparent);
+  border: 1px solid color-mix(in srgb, var(--nx-border) 82%, transparent);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.055), inset 0 1px 0 rgba(255, 255, 255, 0.34);
+  backdrop-filter: blur(16px) saturate(135%);
+  -webkit-backdrop-filter: blur(16px) saturate(135%);
+  transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
 }
 
 .nx3 .glass-chrome {
-  background: var(--nx-surface);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  background: color-mix(in srgb, var(--nx-page) 78%, transparent);
+  backdrop-filter: blur(18px) saturate(145%);
+  -webkit-backdrop-filter: blur(18px) saturate(145%);
+}
+
+.dark .nx3 .glass-surface {
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+.nx3 :where(button, a) {
+  transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+  transition-duration: 160ms;
+  transition-timing-function: ease;
+}
+
+.nx3 .nx3-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nx3 *,
+  .nx3 *::before,
+  .nx3 *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 .nx3 .bg-blue-600 {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { apiRequest, TASK_PRIORITIES, TASK_STATUSES } from '../utils/api.js';
 import { useToast } from '../context/ToastContext.jsx';
@@ -6,6 +6,7 @@ import { useToast } from '../context/ToastContext.jsx';
 export default function TaskModal({ open, onClose, onSaved, initialProjectId = '', projects = [], users = [], editTask = null }) {
   const { notify } = useToast();
   const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
 
   const [form, setForm] = useState({
     project_id: '',
@@ -64,6 +65,8 @@ export default function TaskModal({ open, onClose, onSaved, initialProjectId = '
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setSubmitting(true);
     try {
       const payload = {
@@ -101,6 +104,7 @@ export default function TaskModal({ open, onClose, onSaved, initialProjectId = '
     } catch (err) {
       notify(err.message, 'error');
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
   };

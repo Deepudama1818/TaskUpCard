@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Sun, Moon, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Sun, Moon, ShieldCheck, CheckCircle2, BellRing } from 'lucide-react';
 import { apiRequest } from '../utils/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 
-export default function SettingsView() {
+export default function SettingsView({ browserNotificationsEnabled = false, onToggleBrowserNotifications }) {
   const { user, setUser, isSuperAdmin, theme, toggleTheme } = useAuth();
   const { notify } = useToast();
 
@@ -241,6 +241,26 @@ export default function SettingsView() {
           </button>
         </div>
       </form>
+
+      <section className="glass-surface rounded-2xl p-6 space-y-4">
+        <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+          <BellRing className="w-5 h-5 text-blue-600" />
+          <div>
+            <h2 className="font-display text-base font-semibold">Notifications</h2>
+            <p className="text-xs text-slate-500 mt-0.5">Show a desktop alert when a teammate mentions you.</p>
+          </div>
+        </div>
+        <label className="nx3-switch-row flex items-center gap-3 cursor-pointer text-sm">
+          <input
+            type="checkbox"
+            role="switch"
+            className="nx3-switch"
+            checked={browserNotificationsEnabled}
+            onChange={onToggleBrowserNotifications}
+          />
+          <span>Desktop alerts for @mentions</span>
+        </label>
+      </section>
 
       {/* Super Admin Application Configuration */}
       {isSuperAdmin && (

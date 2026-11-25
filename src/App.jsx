@@ -1,5 +1,5 @@
-import { useEffect, useState, useCallback } from 'react';
-import { Bell, Menu, Sun, Moon, Plus, Search } from 'lucide-react';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { Bell, BellOff, BellRing, Menu, Sun, Moon, Plus, RefreshCw, Search } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { ToastProvider, useToast } from './context/ToastContext.jsx';
 import { apiRequest } from './utils/api.js';
@@ -30,12 +30,16 @@ function WorkspaceShell() {
   const [users, setUsers] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [browserNotificationsEnabled, setBrowserNotificationsEnabled] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const seenNotificationIdsRef = useRef(new Set());
 
   const [openTaskId, setOpenTaskId] = useState(null);
   const [quickTaskModalOpen, setQuickTaskModalOpen] = useState(false);
   const [refreshSignal, setRefreshSignal] = useState(0);
 
   const triggerRefresh = useCallback(() => {
+    setRefreshing(true);
     setRefreshSignal((n) => n + 1);
   }, []);
 
@@ -43,6 +47,39 @@ function WorkspaceShell() {
     setActiveTab(tab);
     setVisitedTabs((visited) => visited.has(tab) ? visited : new Set([...visited, tab]));
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    const enabled = localStorage.getItem(`taskupcard_browser_notifications_${user.id}`) === 'true';
+    setBrowserNotificationsEnabled(enabled && 'Notification' in window && Notification.permission === 'granted');
+  }, [user?.id]);
+
+  const toggleBrowserNotifications = useCallback(async () => {
+    if (!user) return;
+    const storageKey = `taskupcard_browser_notifications_${user.id}`;
+    if (browserNotificationsEnabled) {
+      localStorage.setItem(storageKey, 'false');
+      setBrowserNotificationsEnabled(false);
+      notify('Desktop notifications are off.', 'info');
+      return;
+    }
+    if (!('Notification' in window)) {
+      notify('Desktop notifications are not supported by this browser.', 'error');
+      return;
+    }
+    const permission = Notification.permission === 'granted'
+      ? 'granted'
+      : await Notification.requestPermission();
+    if (permission !== 'granted') {
+      notify(permission === 'denied'
+        ? 'Allow notifications for this site in your browser settings to turn them on.'
+        : 'Notification permission was not granted.', 'info');
+      return;
+    }
+    localStorage.setItem(storageKey, 'true');
+    setBrowserNotificationsEnabled(true);
+    notify('Desktop notifications are on for mentions.', 'success');
+  }, [browserNotificationsEnabled, notify, user]);
 
   const loadWorkspaceMeta = useCallback(async () => {
     if (!user) return;
@@ -54,10 +91,17 @@ function WorkspaceShell() {
       ]);
       setProjects(projRes.projects || []);
       setUsers(usersRes.users || []);
-      setNotifications(notifRes.notifications || []);
+      const loadedNotifications = notifRes.notifications || [];
+      loadedNotifications.forEach((notification) => seenNotificationIdsRef.current.add(notification.id));
+      setNotifications((previous) => {
+        const byId = new Map([...loadedNotifications, ...previous].map((notification) => [notification.id, notification]));
+        return [...byId.values()].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      });
       setUnreadCount(notifRes.unreadCount || 0);
     } catch {
       // Handled gracefully
+    } finally {
+      setRefreshing(false);
     }
   }, [user]);
 
@@ -72,12 +116,26 @@ function WorkspaceShell() {
     if (!socket) return;
 
     const handleNewNotification = (notif) => {
+      if (seenNotificationIdsRef.current.has(notif.id)) return;
+      seenNotificationIdsRef.current.add(notif.id);
       setNotifications((prev) => {
         if (prev.some((n) => n.id === notif.id)) return prev;
         return [notif, ...prev];
       });
-      setUnreadCount((c) => c + 1);
+      if (!notif.is_read) setUnreadCount((count) => count + 1);
       notify(notif.title, 'info');
+      if (notif.type === 'mention' && browserNotificationsEnabled && 'Notification' in window && Notification.permission === 'granted') {
+        const popup = new Notification(notif.title, {
+          body: notif.message,
+          tag: `taskupcard-${notif.id}`,
+        });
+        popup.onclick = () => {
+          window.focus();
+          navigateToTab('notifications');
+          if (notif.task_id) setOpenTaskId(notif.task_id);
+          popup.close();
+        };
+      }
     };
 
     const handleWorkspaceTaskChange = () => {
@@ -95,7 +153,7 @@ function WorkspaceShell() {
       socket.off('task:updated', handleWorkspaceTaskChange);
       socket.off('task:deleted', handleWorkspaceTaskChange);
     };
-  }, [user, notify]);
+  }, [user, notify, browserNotificationsEnabled, navigateToTab]);
 
   if (loading) {
     return (
@@ -158,6 +216,17 @@ function WorkspaceShell() {
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <button
               type="button"
+              onClick={triggerRefresh}
+              disabled={refreshing}
+              className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-60"
+              aria-label="Refresh workspace"
+              title="Refresh workspace"
+            >
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+            </button>
+
+            <button
+              type="button"
               onClick={() => navigateToTab(isPrivileged ? 'all-tasks' : 'my-tasks')}
               className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 text-xs text-slate-500 dark:text-slate-400 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
             >
@@ -185,6 +254,17 @@ function WorkspaceShell() {
                   {unreadCount}
                 </span>
               )}
+            </button>
+
+            <button
+              type="button"
+              onClick={toggleBrowserNotifications}
+              className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              aria-label={browserNotificationsEnabled ? 'Turn desktop notifications off' : 'Turn desktop notifications on'}
+              aria-pressed={browserNotificationsEnabled}
+              title={browserNotificationsEnabled ? 'Desktop mention alerts on' : 'Enable desktop mention alerts'}
+            >
+              {browserNotificationsEnabled ? <BellRing className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
             </button>
 
             {isPrivileged && (
@@ -294,7 +374,10 @@ function WorkspaceShell() {
 
           {visitedTabs.has('settings') && (
             <div hidden={activeTab !== 'settings'}>
-              <SettingsView />
+              <SettingsView
+                browserNotificationsEnabled={browserNotificationsEnabled}
+                onToggleBrowserNotifications={toggleBrowserNotifications}
+              />
             </div>
           )}
         </main>
